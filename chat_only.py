@@ -25,14 +25,8 @@ class Playground:
         self.chat_history.clear()
         self.context_str = ""
 
-def get_reference_text(retriever:EnsembleRetriever, query_str:str):
-    relevant_documents = retriever.get_relevant_documents(query_str)
-    return "\n".join([doc.page_content for doc in relevant_documents])
 
 def submit(query_str , playground:Playground, chat_bot):
-    references = get_reference_text(playground.retriever, query_str)
-    playground.context_str += references
-    # print('relevant_documents',references)
     _answer = get_ai_answer(chat_history=playground.chat_history , context_str=playground.context_str, query_str=query_str)
     # print('answer',_answer)
     playground.chat_history.append(MessageData(role='user' , content=query_str))
@@ -92,21 +86,13 @@ def start_state(file_upload, playground:Playground , chat_bot,Img, em_model):
 
 with gr.Blocks() as demo:
     playground = gr.State(value=Playground())
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("# 文档")  
-            file_upload = gr.File(label="上传您的文件")
-            gr.Markdown("# Embedding")
-            em_model = gr.Dropdown(choices=["nomic-embed-text","text-embedding-v3"], label="Embedding")
-            Img = gr.Image(value=None, visible=True)
-            start_button = gr.Button(value="Start", variant="primary")
-        with gr.Column():
-            gr.Markdown("# AI 问答")
-            chat_bot = gr.Chatbot( value= [] , height=600)
-            user_prompt = gr.Textbox(label="USER", placeholder="Enter a user message here.")
-            with gr.Row():
-                submit_button = gr.Button(value="Submit", variant="primary")
-                clear_result_button = gr.Button("Clear History")
+    with gr.Column():
+        gr.Markdown("# AI 问答")
+        chat_bot = gr.Chatbot( value= [] , height=600)
+        user_prompt = gr.Textbox(label="USER", placeholder="Enter a user message here.")
+        with gr.Row():
+            submit_button = gr.Button(value="Submit", variant="primary")
+            clear_result_button = gr.Button("Clear History")
 
     
     submit_button.click(
@@ -117,10 +103,7 @@ with gr.Blocks() as demo:
     )
     clear_result_button.click(reset_state, inputs=[playground, chat_bot], outputs=[chat_bot], show_progress=True)
 
-    start_button.click(
-        start_state, inputs=[file_upload, playground, chat_bot,Img, em_model], outputs=[chat_bot,Img], show_progress=True
-    )
 
 if __name__ == "__main__":
     gr.close_all()
-    demo.launch(server_port=40044, share=False, show_api=False)
+    demo.launch(server_port=40045, share=False, show_api=False)
