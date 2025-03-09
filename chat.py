@@ -21,12 +21,18 @@ def get_ai_answer(chat_history, context_str, query_str):
 
     _content = PROMPT_TEMPLATE.format(context_str=context_str, chat_history=chat, query_str=query_str)
 
+
+    # 在线模型
     messages = [{
         "role": "system",
         "content":_content
     }]
-
     ans = get_response(messages).output.choices[0].message.content
+    # ========================
+    # 本地模型
+    # messages = {"model": "qwen", "prompt": _content}
+    # ans = ORequest(messages)
+
     return ans
 
 
