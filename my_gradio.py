@@ -14,6 +14,7 @@ class MessageData(TypedDict, total=False):
 class Playground:
     def __init__(self):
         self.chat_history = []
+        self.chat_history_wo = []
         self.context_str = ""
         self.retriever = None
         
@@ -23,6 +24,7 @@ class Playground:
         """ 清空历史信息
         """
         self.chat_history.clear()
+        self.chat_history_wo.clear()
         self.context_str = ""
 
 def get_reference_text(retriever:EnsembleRetriever, query_str:str):
@@ -41,8 +43,19 @@ def submit(query_str , playground:Playground, chat_bot):
     query_str = ""
     return query_str , chat_bot 
 
+def submit_wo(query_str , playground:Playground, chat_bot):
+    _answer = get_ai_answer(chat_history=playground.chat_history_wo , context_str="", query_str=query_str)
+    # print('answer',_answer)
+    playground.chat_history_wo.append(MessageData(role='user' , content=query_str))
+    playground.chat_history_wo.append(MessageData(role='assistant' , content=_answer))
+    chat_bot.append((query_str, _answer))
+    query_str = ""
+    return query_str , chat_bot 
 
 def clear_user_input():
+    return gr.update(value='')
+
+def clear_user_input_wo():
     return gr.update(value='')
 
 def reset_state(playground, chat_bot):
@@ -50,6 +63,12 @@ def reset_state(playground, chat_bot):
     chat_bot = []
 
     return chat_bot
+
+def reset_state_wo(playground, chat_bot_wo):
+    playground.clean_history()
+    chat_bot_wo = []
+
+    return chat_bot_wo
 
 # def read_pdf_with_pymupdf(file_path):
 #     document = fitz.open(file_path)
@@ -101,16 +120,31 @@ with gr.Blocks() as demo:
             Img = gr.Image(value=None, visible=True)
             start_button = gr.Button(value="Start", variant="primary")
         with gr.Column():
-            gr.Markdown("# AI 问答")
+            gr.Markdown("# AI 问答（RAG）")
             chat_bot = gr.Chatbot( value= [] , height=600)
             user_prompt = gr.Textbox(label="USER", placeholder="Enter a user message here.")
             with gr.Row():
                 submit_button = gr.Button(value="Submit", variant="primary")
                 clear_result_button = gr.Button("Clear History")
+        with gr.Column():
+            gr.Markdown("# AI 问答")
+            chat_bot_wo = gr.Chatbot( value= [] , height=600)
+            user_prompt_wo = gr.Textbox(label="USER", placeholder="Enter a user message here.")
+            with gr.Row():
+                submit_button_wo = gr.Button(value="Submit", variant="primary")
+                clear_result_button_wo = gr.Button("Clear History")
 
-    
+    submit_button_wo.click(
+        submit_wo, inputs=[user_prompt_wo , playground, chat_bot_wo], outputs= [user_prompt_wo, chat_bot_wo]
+    )
+    submit_button_wo.click(
+        clear_user_input_wo, [], [user_prompt_wo]
+    )
+    clear_result_button_wo.click(reset_state_wo, inputs=[playground, chat_bot_wo], outputs=[chat_bot_wo], show_progress=True)
+
+
     submit_button.click(
-        submit, inputs=[user_prompt , playground, chat_bot ], outputs= [user_prompt, chat_bot]
+        submit, inputs=[user_prompt , playground, chat_bot], outputs= [user_prompt, chat_bot]
     )
     submit_button.click(
         clear_user_input, [], [user_prompt]
