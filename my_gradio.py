@@ -31,9 +31,9 @@ def get_reference_text(retriever:EnsembleRetriever, query_str:str):
 
 def submit(query_str , playground:Playground, chat_bot):
     references = get_reference_text(playground.retriever, query_str)
-    print('relevant_documents',references)
+    # print('relevant_documents',references)
     _answer = get_ai_answer(chat_history=playground.chat_history , context_str=playground.context_str, query_str=query_str)
-    print('answer',_answer)
+    # print('answer',_answer)
     playground.chat_history.append(MessageData(role='user' , content=query_str))
     playground.chat_history.append(MessageData(role='assistant' , content=_answer))
     chat_bot.append((query_str, _answer))

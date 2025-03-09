@@ -73,10 +73,10 @@ def visualize_vectors(db):
     print(f"向量维度: {d}")
 
     # 打印每个向量的值
-    # for i in range(num_vectors):
-    #     vector = np.zeros(d, dtype='float32')
-    #     index.reconstruct(i, vector)
-    #     print(f"Vector {i}: {vector}")
+    for i in range(num_vectors):
+        vector = np.zeros(d, dtype='float32')
+        index.reconstruct(i, vector)
+        print(f"Vector {i}: {vector}")
 
     # 检查是否有足够的向量和特征
     if num_vectors < 2 or d < 2:
